@@ -12,8 +12,6 @@ const postSchema = mongoose.Schema({
     required: true,
   },
 
-  //TODO image_url
-
   category: {
     type: String,
     default: null,
@@ -24,6 +22,19 @@ const postSchema = mongoose.Schema({
     type: String,
     default: null,
     required: true,
+  },
+
+  blogImage: {
+    public_id: {
+      type: String,
+      default: null,
+      required: true,
+    },
+    secure_url: {
+      type: String,
+      default: null,
+      required: true,
+    },
   },
 
   datetime: {

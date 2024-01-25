@@ -1,6 +1,8 @@
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { signedCookies } = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const { SECRET_KEY } = process.env;
 
 const createUser = async (req, res) => {
@@ -57,7 +59,7 @@ const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (user && bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       const token = jwt.sign(
         { user_id: user._id, username: user.username },
         SECRET_KEY,
@@ -81,6 +83,8 @@ const loginUser = async (req, res) => {
         token,
         user,
       });
+    } else {
+      res.json({ success: false, err: "Invalid email or password!" });
     }
   } catch (error) {
     res.status(400).send("Invalid email or password!");
@@ -88,4 +92,16 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser, loginUser };
+const logout = (req, res) => {
+  const token = req.cookies.token;
+  jwt.sign(token, SECRET_KEY, { expiresIn: 1 }, (signout, err) => {
+    if (signout) {
+      res.clearCookie("token");
+      res.status(200).json({ success: true, msg: "Successfully logged out" });
+    } else {
+      res.status(400).json({ success: false, msg: "Error logging out..." });
+    }
+  });
+};
+
+module.exports = { createUser, loginUser, logout };
